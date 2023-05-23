@@ -3,6 +3,9 @@ public class City {
     private int id;
     private int x;
     private int y;
+    private double zScoreX;
+    private double zScoreY;
+
 
     public City(int id, int x, int y){
         this.id = id;
@@ -22,6 +25,14 @@ public class City {
         this.id = id;
     }
 
+    public void setZScoreX(double z){
+        this.zScoreX = z;
+    }
+
+    public void setZScoreY(double z){
+        this.zScoreY = z;
+    }
+
     public int getX(){
         return this.x;
     }
@@ -32,6 +43,14 @@ public class City {
 
     public int getId(){
         return this.id;
+    }
+
+    public double getZScoreX(){
+        return this.zScoreX;
+    }
+
+    public double getZScoreY(){
+        return this.zScoreY;
     }
 
     public String toString(){
