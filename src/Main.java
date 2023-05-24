@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.io.PrintWriter;
+import java.net.SocketImpl;
 
 class Main {
 
     private static ArrayList<City> cities = new ArrayList<City>();
-    private static ArrayList<City> results = new ArrayList<City>();// This is the found optimal path
+    private static ArrayList<City> result = new ArrayList<City>();// This is the found optimal path
     private static PrintWriter writer;
     private static int totalLenght = 0;// Lenght of road
     private static int numOfCities = 0;// Number of cities after half
@@ -24,8 +25,8 @@ class Main {
 
         double means[] = readInput();// Read input also calculates the means of the input
 
-        City startingCity = chooseHalf(means);//ChooseHalf also finds the ideal city to start at
-        
+        City startingCity = chooseHalf(means);// ChooseHalf also finds the ideal city to start at
+
         nearestNeighborSolution(startingCity);
 
         // To track runtime
@@ -36,7 +37,7 @@ class Main {
         printOutput();
     }
 
-    //Removes half of cities using statistics. 
+    // Removes half of cities using statistics.
     private static City chooseHalf(double[] means) {
 
         double xMean = means[0];
@@ -90,25 +91,24 @@ class Main {
         while (numOfCities != cities.size()) {
             if (swtch) {
                 cities.remove(sortedX.get(0));
-                sortedX.remove(0);
                 swtch = !swtch;
             } else {
                 cities.remove(sortedY.get(0));
-                sortedY.remove(0);
                 swtch = !swtch;
             }
         }
 
-        //The best starting city should be the center of all other cities.
-        //This will approximately find the center most city by calculating the sum of z-scores
-        //Using a brute force approach.
+        // The best starting city should be the center of all other cities.
+        // This will approximately find the center most city by calculating the sum of
+        // z-scores
+        // Using a brute force approach.
         City idealCity = cities.get(0);
         double idealSum = idealCity.getZScoreX() + idealCity.getZScoreY();
         double currentSum = 0.0;
 
-        for (int i = 0; cities.size() > i; i++){
+        for (int i = 0; cities.size() > i; i++) {
             currentSum = cities.get(i).getZScoreX() + cities.get(i).getZScoreY();
-            if (currentSum < idealSum){
+            if (currentSum < idealSum) {
                 idealCity = cities.get(i);
                 idealSum = currentSum;
             }
@@ -136,7 +136,7 @@ class Main {
 
             currentCity = closestCity;// Go to next city
 
-            results.add(currentCity);
+            result.add(currentCity);
             unvisitedCities.remove(currentCity);
 
             // Find nearest neighbor
@@ -209,7 +209,7 @@ class Main {
     private static void printOutput() throws IOException {
 
         writer.printf(totalLenght + "\n");
-        for (City city : results) {
+        for (City city : result) {
             writer.printf(city.getId() + "\n");
         }
         writer.close();
