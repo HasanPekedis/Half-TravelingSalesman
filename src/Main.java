@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.io.PrintWriter;
-import java.net.SocketImpl;
 
 class Main {
 
@@ -28,13 +27,18 @@ class Main {
         City startingCity = chooseHalf(means);// ChooseHalf also finds the ideal city to start at
 
         nearestNeighborSolution(startingCity);
+        
+        System.out.println("Length of road: " + totalLenght);
+    
+        optimizeResult();
+
+        System.out.println("After Optimization Length of road: " + totalLenght);
+
+        printOutput();
 
         // To track runtime
         long endTime = System.nanoTime();
         System.out.println("Runtime: " + ((endTime - startTime) / 1000000));// nanoseconds to milliseconds
-        System.out.println("Length of road: " + totalLenght);
-
-        printOutput();
     }
 
     // Removes half of cities using statistics.
@@ -152,6 +156,50 @@ class Main {
         // Finally, go back to the city you started from
         totalLenght += getDistance(startCity, closestCity);
 
+    }
+
+    private static void do2Opt(ArrayList<City> result, int i, int j) {
+        ArrayList<City> reversed = new ArrayList<>(result.subList(i + 1, j + 1));
+        for (int k = i + 1; k <= j; k++) {
+            result.set(k, reversed.get(j - k));
+        }
+    }
+
+    private static void optimizeResult() {
+
+
+        int n = result.size();
+
+        boolean foundImprovement = true;
+
+        // result.get(i).dist2(result.get(j))
+        while (foundImprovement) {
+            foundImprovement = false;
+            for (int i = 0; i <= n - 2; i++) {
+                for (int j = i + 1; j <= n - 1; j++) {
+                    if (!((i == n - 1) || (j == n - 1))) {
+                        int lengthDelta = -getDistance(result.get(i), result.get(i + 1))
+                                - getDistance(result.get(j), result.get(j + 1))
+                                + getDistance(result.get(i), result.get(j)) + getDistance(result.get(i + 1), result.get(j + 1));
+
+                        // If the length of the path is reduced, do a 2-opt swap
+                        if (lengthDelta < 0) {
+                            do2Opt(result, i, j);
+                            totalLenght += lengthDelta;
+                            foundImprovement = true;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static void printPath(ArrayList<City> cities) { //If you want to see diffrence between optimezed result and non-optimized result, you can use print path.
+        for (City city : cities) {
+            System.out.print("--> "  + city.getId());
+        }
+        System.out.println();
     }
 
     // Finds the distance between 2 cities.
