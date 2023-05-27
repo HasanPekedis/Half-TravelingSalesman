@@ -56,13 +56,15 @@ class Main {
         // We now need to calculate the variance for both x and y
         double sumOfDifferencesX = 0;
         double sumOfDifferencesY = 0;
+        double difX = 0;
+        double difY = 0;
 
         for (int i = 0; i < cities.size(); i++) {
-            sumOfDifferencesX = cities.get(i).getX() - xMean;
-            sumOfDifferencesX = sumOfDifferencesX * sumOfDifferencesX;
+            difX = cities.get(i).getX() - xMean;
+            sumOfDifferencesX = difX * difX;
 
-            sumOfDifferencesY = cities.get(i).getY() - yMean;
-            sumOfDifferencesY = sumOfDifferencesY * sumOfDifferencesY;
+            difY = cities.get(i).getY() - yMean;
+            sumOfDifferencesY = difY * difY;
         }
 
         // And now we calculate the standart deviation.
