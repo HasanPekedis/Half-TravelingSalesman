@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.io.PrintWriter;
@@ -10,6 +11,7 @@ class Main {
 
     private static ArrayList<City> cities = new ArrayList<City>();
     private static ArrayList<City> result = new ArrayList<City>();// This is the found optimal path
+    private static ArrayList<City> temp = new ArrayList<City>();
     private static PrintWriter writer;
     private static int totalLenght = 0;// Lenght of road
     private static int numOfCities = 0;// Number of cities after half
@@ -27,7 +29,9 @@ class Main {
         City startingCity = chooseHalf(means);// ChooseHalf also finds the ideal city to start at
 
         nearestNeighborSolution(startingCity);
-        
+
+        //regionSolution(means);
+
         System.out.println("Length of road: " + totalLenght);
     
         optimizeResult();
@@ -60,66 +64,21 @@ class Main {
         double difY = 0;
 
         for (int i = 0; i < cities.size(); i++) {
-            difX = cities.get(i).getX() - xMean;
+            City current = cities.get(i);
+            difX = current.getX() - xMean;
             sumOfDifferencesX = difX * difX;
 
-            difY = cities.get(i).getY() - yMean;
+            difY = current.getY() - yMean;
             sumOfDifferencesY = difY * difY;
+
+            current.setMeanLength(sumOfDifferencesX + sumOfDifferencesY);
         }
 
-        // And now we calculate the standart deviation.
-        double stdX = Math.sqrt(sumOfDifferencesX / cities.size());
-        double stdY = Math.sqrt(sumOfDifferencesY / cities.size());
-
-        // And now, we need to calculate the z-scores (distance from mean) and sort
-        // The cities accordingly. For this we will use selection sort.
-        ArrayList<City> sortedX = new ArrayList<City>();
-        ArrayList<City> sortedY = new ArrayList<City>();
-
-        // Set all zscores
-        for (int i = 0; i < cities.size(); i++) {
-            City currentCity = cities.get(i);
-            currentCity.setZScoreX(Math.abs((currentCity.getX() - xMean) / stdX));
-            currentCity.setZScoreY(Math.abs((currentCity.getY() - yMean) / stdY));
-
+        cities.sort(Comparator.comparing(City::getMeanLength));
+        for(int i = cities.size()-1;i >= numOfCities;i--) {
+            cities.remove(i);
         }
-
-        // Sort according to x
-        cities.sort(Comparator.comparing(City::getZScoreX).reversed());
-        sortedX = cities;
-
-        // Sort according to Y
-        cities.sort(Comparator.comparing(City::getZScoreY).reversed());
-        sortedY = cities;
-
-        boolean swtch = false; // This is a switch to remove from both x and y
-
-        while (numOfCities != cities.size()) {
-            if (swtch) {
-                cities.remove(sortedX.get(0));
-                swtch = !swtch;
-            } else {
-                cities.remove(sortedY.get(0));
-                swtch = !swtch;
-            }
-        }
-
-        // The best starting city should be the center of all other cities.
-        // This will approximately find the center most city by calculating the sum of
-        // z-scores
-        // Using a brute force approach.
-        City idealCity = cities.get(0);
-        double idealSum = idealCity.getZScoreX() + idealCity.getZScoreY();
-        double currentSum = 0.0;
-
-        for (int i = 0; cities.size() > i; i++) {
-            currentSum = cities.get(i).getZScoreX() + cities.get(i).getZScoreY();
-            if (currentSum < idealSum) {
-                idealCity = cities.get(i);
-                idealSum = currentSum;
-            }
-        }
-        return idealCity;
+        return cities.get(0);
     }
 
     // This is a basic nearest neighbor solution
@@ -157,6 +116,149 @@ class Main {
 
         // Finally, go back to the city you started from
         totalLenght += getDistance(startCity, closestCity);
+
+    }
+
+    private static void regionSolution(double[] means){
+        double xMean = means[0];
+        double yMean = means[1];
+
+        double r = cities.get(cities.size()-1).getMeanLength();
+
+        double t =  r / numOfCities;
+        t = t * t;
+        if(t <= 0){
+            t = Double.MIN_VALUE;
+        }
+
+
+        // Put all cities to proper region
+        City tp;
+        double dif;
+        long size_Cities = cities.size();
+        int loop = (int) (r / t + t);
+        int j;
+        boolean ascend = true;
+
+
+        // 1. Region traverse
+        for(int i = 0; i < loop; i++) {
+            j = 0;
+            while (j < size_Cities) {
+                tp = cities.get(j);
+                if (tp.getY() - yMean >= 0) {
+                    dif = tp.getX() - xMean;
+                    if (dif >= t*i && dif <= t*(i+1)) {
+                        temp.add(tp);
+                        size_Cities--;
+                        cities.remove(j);
+                        continue;
+                    }
+                }
+                j++;
+            }
+            if (temp.size() > 0) {
+                if (ascend) {
+                    temp.sort(Comparator.comparing(City::getY));
+                } else {
+                    temp.sort(Comparator.comparing(City::getY).reversed());
+                }
+                ascend = !ascend;
+                tempToResult();
+            }
+        }
+        ascend = false;
+
+
+        // 4. Region
+        for(int i = loop; i > 0; i--) {
+            j = 0;
+            while (j < size_Cities) {
+                tp = cities.get(j);
+                if (tp.getY() - yMean < 0) {
+                    dif = tp.getX() - xMean;
+                    if (dif >= (i - 1) * t && dif <= t*i ) {
+                        temp.add(tp);
+                        size_Cities--;
+                        cities.remove(j);
+                        continue;
+                    }
+                }
+                j++;
+            }
+            if (temp.size() > 0) {
+                if (ascend) {
+                    temp.sort(Comparator.comparing(City::getY));
+                } else {
+                    temp.sort(Comparator.comparing(City::getY).reversed());
+                }
+                ascend = !ascend;
+                tempToResult();
+            }
+        }
+
+        // 3. Region
+        for(int i = 0; i < loop; i++) {
+            j = 0;
+            while (j < size_Cities) {
+                tp = cities.get(j);
+                if (tp.getY() - yMean < 0) {
+                    dif = xMean - tp.getX();
+                    if (dif >= i*t && dif <= t*(i+1)) {
+                        temp.add(tp);
+                        size_Cities--;
+                        cities.remove(j);
+                        continue;
+                    }
+                }
+                j++;
+            }
+            if (temp.size() > 0) {
+                if (ascend) {
+                    temp.sort(Comparator.comparing(City::getY));
+                } else {
+                    temp.sort(Comparator.comparing(City::getY).reversed());
+                }
+                ascend = !ascend;
+                tempToResult();
+            }
+        }
+
+        ascend = true;
+        // 2. Region
+        for(int i = loop; i > 0; i--) {
+            j = 0;
+            while (j < size_Cities) {
+                tp = cities.get(j);
+                if (tp.getY() - yMean >= 0) {
+                    dif = xMean - tp.getX();
+                    if (dif >= (i - 1) * t && dif <= t*i ){
+                        temp.add(tp);
+                        size_Cities--;
+                        cities.remove(j);
+                        continue;
+                    }
+                }
+                j++;
+            }
+            if (temp.size() > 0) {
+                if (ascend) {
+                    temp.sort(Comparator.comparing(City::getY));
+                } else {
+                    temp.sort(Comparator.comparing(City::getY).reversed());
+                }
+                ascend = !ascend;
+                tempToResult();
+            }
+        }
+
+
+        for(int i = 0; i < result.size() - 1; i++){
+            totalLenght += getDistance(result.get(i), result.get(i+1));
+        }
+        totalLenght += getDistance(result.get(0), result.get(result.size()-1));
+
+
 
     }
 
@@ -263,5 +365,12 @@ class Main {
             writer.printf(city.getId() + "\n");
         }
         writer.close();
+    }
+
+    private static void tempToResult(){
+        for (int i = 0; i < temp.size(); i++){
+            result.add(temp.get(i));
+        }
+        temp.clear();
     }
 }

@@ -3,8 +3,7 @@ public class City {
     private int id;
     private int x;
     private int y;
-    private double zScoreX;
-    private double zScoreY;
+    private double meanLength;
 
 
     public City(int id, int x, int y){
@@ -25,12 +24,8 @@ public class City {
         this.id = id;
     }
 
-    public void setZScoreX(double z){
-        this.zScoreX = z;
-    }
-
-    public void setZScoreY(double z){
-        this.zScoreY = z;
+    public void setMeanLength(double meanLength){
+        this.meanLength = meanLength;
     }
 
     public int getX(){
@@ -45,12 +40,8 @@ public class City {
         return this.id;
     }
 
-    public double getZScoreX(){
-        return this.zScoreX;
-    }
-
-    public double getZScoreY(){
-        return this.zScoreY;
+    public double getMeanLength(){
+        return this.meanLength;
     }
 
     public String toString(){
