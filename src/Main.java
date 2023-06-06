@@ -58,21 +58,18 @@ class Main {
         }
 
         // We now need to calculate the variance for both x and y
-        double sumOfDifferencesX = 0;
-        double sumOfDifferencesY = 0;
-        double difX = 0;
-        double difY = 0;
+        double difX;
+        double difY;
 
         for (int i = 0; i < cities.size(); i++) {
             City current = cities.get(i);
             difX = current.getX() - xMean;
-            sumOfDifferencesX = difX * difX;
 
             difY = current.getY() - yMean;
-            sumOfDifferencesY = difY * difY;
 
-            current.setMeanLength(sumOfDifferencesX + sumOfDifferencesY);
+            current.setMeanLength(difX * difX + difY * difY);
         }
+
 
         cities.sort(Comparator.comparing(City::getMeanLength));
         for(int i = cities.size()-1;i >= numOfCities;i--) {
@@ -123,10 +120,13 @@ class Main {
         double xMean = means[0];
         double yMean = means[1];
 
-        double r = cities.get(cities.size()-1).getMeanLength();
+        double r = Math.sqrt(cities.get(cities.size()-1).getMeanLength());
 
         double t =  r / numOfCities;
-        t = t * t;
+
+        t *= 485;
+
+        System.out.print(t);
         if(t <= 0){
             t = Double.MIN_VALUE;
         }
@@ -136,7 +136,8 @@ class Main {
         City tp;
         double dif;
         long size_Cities = cities.size();
-        int loop = (int) (r / t + t);
+        int loop = (int) (r / t);
+        loop += 2;
         int j;
         boolean ascend = true;
 
@@ -319,8 +320,8 @@ class Main {
         Scanner tempScanner = new Scanner(new File(inputFileName));
 
         // These are for calculating the covariance
-        int xSum = 0;
-        int ySum = 0;
+        long xSum = 0;
+        long ySum = 0;
 
         // These are used to store the cities
         int id;
