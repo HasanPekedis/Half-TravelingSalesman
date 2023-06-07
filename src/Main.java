@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.io.PrintWriter;
@@ -13,7 +12,7 @@ class Main {
     private static ArrayList<City> result = new ArrayList<City>();// This is the found optimal path
     private static ArrayList<City> temp = new ArrayList<City>();
     private static PrintWriter writer;
-    private static int totalLenght = 0;// Lenght of road
+    private static long totalLenght = 0;// Lenght of road
     private static int numOfCities = 0;// Number of cities after half
     private static String inputFileName;
 
@@ -86,8 +85,8 @@ class Main {
 
         // Set values before loop
         City closestCity = startCity;
-        int min = 0;
-        int distance = 0;
+        long min = 0;
+        long distance = 0;
         ArrayList<City> unvisitedCities = cities;
 
         // Loop trough each city
@@ -283,7 +282,7 @@ class Main {
             for (int i = 0; i <= n - 2; i++) {
                 for (int j = i + 1; j <= n - 1; j++) {
                     if (!((i == n - 1) || (j == n - 1))) {
-                        int lengthDelta = -getDistance(result.get(i), result.get(i + 1))
+                        long lengthDelta = -getDistance(result.get(i), result.get(i + 1))
                                 - getDistance(result.get(j), result.get(j + 1))
                                 + getDistance(result.get(i), result.get(j)) + getDistance(result.get(i + 1), result.get(j + 1));
 
@@ -300,18 +299,11 @@ class Main {
 
     }
 
-    private static void printPath(ArrayList<City> cities) { //If you want to see diffrence between optimezed result and non-optimized result, you can use print path.
-        for (City city : cities) {
-            System.out.print("--> "  + city.getId());
-        }
-        System.out.println();
-    }
-
     // Finds the distance between 2 cities.
-    private static int getDistance(City city1, City city2) {
-        int xDif = city1.getX() - city2.getX();
-        int yDif = city1.getY() - city2.getY();
-        return (int) Math.round(Math.sqrt(xDif * xDif + yDif * yDif));
+    private static long getDistance(City city1, City city2) {
+        long xDif = city1.getX() - city2.getX();
+        long yDif = city1.getY() - city2.getY();
+        return (long) Math.round(Math.sqrt(xDif * xDif + yDif * yDif));
     }
 
     // Reads the input and parses integers
